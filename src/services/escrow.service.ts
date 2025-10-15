@@ -63,21 +63,36 @@ export class EscrowService {
             `A new escrow has been created for your gig "${gig.title}" with amount ${amount} ADA.`
         );
 
-        // TODO: Generate Cardano transaction metadata for escrow-contract.plutus
-        // This should include:
-        // - Escrow amount in lovelace
-        // - Seller's wallet address
-        // - Escrow expiry slot
-        // - Escrow ID as datum
+        // Generate Cardano transaction metadata for your escrow-contract.plutus
+        const contractAddress = process.env.ESCROW_CONTRACT_ADDRESS || 'addr_test1wrae375x9fq2688cfcraswnr9sgwvnr0aqvqtx77rglg33qrztgve';
+        const buyerAddress = createEscrowDto.buyer_id;
+
         const txMetadata = {
             escrowId: escrow.id,
             amount: amount * 1000000, // Convert ADA to lovelace
-            sellerAddress: gig.seller_id, // TODO: Get actual Cardano address
+            contractAddress: contractAddress,
+            buyerAddress: buyerAddress,
+            sellerAddress: gig.seller_id,
             expirySlot: this.calculateExpirySlot(expiryDate),
-            datum: escrow.id
+            datum: {
+                constructor: 0,
+                fields: [
+                    { bytes: this.addressToPubKeyHash(buyerAddress) },
+                    { bytes: this.addressToPubKeyHash(gig.seller_id) },
+                    { bytes: this.addressToPubKeyHash('arbiter_address_here') }, // TODO: Add arbiter
+                    { int: this.calculateExpirySlot(expiryDate) },
+                    { bytes: Buffer.from(escrow.id).toString('hex') }
+                ]
+            },
+            redeemer: {
+                ReleaseToSeller: { constructor: 0, fields: [] },
+                RefundToBuyer: { constructor: 1, fields: [] }
+            }
         };
 
-        console.log('Cardano transaction metadata prepared:', txMetadata);
+        console.log('Cardano transaction metadata for your contract:', txMetadata);
+        console.log('Contract Address:', contractAddress);
+        console.log('Buyer Address:', buyerAddress);
 
         return escrow;
     }
@@ -345,5 +360,20 @@ export class EscrowService {
         const now = new Date();
         const secondsUntilExpiry = Math.floor((expiryDate.getTime() - now.getTime()) / 1000);
         return Math.floor(Date.now() / 1000) + secondsUntilExpiry;
+    }
+
+    /**
+     * Convert Cardano address to PubKeyHash (simplified)
+     * TODO: Implement proper address decoding
+     */
+    private addressToPubKeyHash(address: string): string {
+        // This is a simplified implementation
+        // In reality, you need to decode the bech32 address
+        // For now, return a placeholder that matches the expected format
+        if (address.startsWith('addr_test1')) {
+            // Extract the hex part from the address (simplified)
+            return address.slice(11, 43); // This is not correct, just for demonstration
+        }
+        return 'placeholder_pubkeyhash';
     }
 }
