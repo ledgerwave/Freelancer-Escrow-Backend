@@ -70,11 +70,6 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  logger.log(`Application is running on: http://localhost:${port}`);
-  logger.log(`Swagger documentation: http://localhost:${port}/docs`);
-  logger.log(`Test endpoint: http://localhost:${port}/test`);
-  logger.log(`Environment: ${nodeEnv}`);
-  logger.log(`Security: Helmet, CORS, Rate limiting enabled`);
-  logger.log(`Monitoring: Request logging and compression enabled`);
+  logger.log(`🏃🏻‍♀️ Application is running on: http://localhost:${port}`);
 }
 bootstrap();
