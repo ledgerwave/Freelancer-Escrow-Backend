@@ -24,7 +24,7 @@ A comprehensive NestJS backend for a Cardano-based freelancer escrow marketplace
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/ledgerwave/Freelancer-Escrow-Backend
 cd escrow-backend
 
 # Install dependencies
